@@ -15,7 +15,7 @@ from .models import Product
 # Create your views here.
 
 
-def store(request, category_slug=None):
+def store(request, category_slug=None):  # Bringing the store page with pagination
     categories = None
     products = None
 
@@ -40,7 +40,7 @@ def store(request, category_slug=None):
     return render(request, "store/store.html", context)
 
 
-def product_detail(request, category_slug, product_slug):
+def product_detail(request, category_slug, product_slug):  # Every product detail
     try:
         single_product = Product.objects.get(
             category__slug=category_slug, slug=product_slug
@@ -58,7 +58,7 @@ def product_detail(request, category_slug, product_slug):
     return render(request, "store/product_detail.html", context)
 
 
-def search(request):
+def search(request):  # Search Functionality by the keyword searched by the user
     if "keyword" in request.GET:
         keyword = request.GET["keyword"]
         if (
