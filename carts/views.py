@@ -1,3 +1,4 @@
+from decimal import Decimal
 from itertools import product
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,14 +12,16 @@ from .models import Cart, CartItem
 # Create your views here.
 
 
-def _cart_id(request):
+def _cart_id(
+    request,
+):  # getting the session id for the not logged in user, if a user is not login and also had no session id we will be creating the session id
     cart = request.session.session_key
     if not cart:
         cart = request.session.create()
     return cart
 
 
-def add_cart(request, product_id):
+def add_cart(request, product_id):  # adding the products to cart
     product = get_object_or_404(Product, id=product_id)  # to get the product
 
     try:
@@ -39,7 +42,7 @@ def add_cart(request, product_id):
     return redirect("cart")
 
 
-def remove_cart(
+def remove_cart(  # removing the cart specific prodcuts
     request, product_id
 ):  # this function helps to decrease the product quantity in the cart
     cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -58,7 +61,7 @@ def remove_cart(
     return redirect("cart")
 
 
-def remove_cart_item(
+def remove_cart_item(  # this function is used to remove the direct product from the cart, it is shown as the remove(red button) in the cart
     request, product_id
 ):  # this function is to delete the cart item not for decreasing the quantity
     cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -85,7 +88,8 @@ def cart(request, total=0, quantity=0, cart_items=None):
 
     except ObjectDoesNotExist:
         cart_items = []
-    tax = total * 0.02
+
+    tax = Decimal(total) * Decimal("0.02")
     grand_total = total + tax
     context = {
         "total": total,
