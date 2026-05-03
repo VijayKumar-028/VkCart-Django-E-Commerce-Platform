@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from store.models import Product
+from store.models import Product, Variation
 
 from .models import Cart, CartItem
 
@@ -22,13 +22,22 @@ def _cart_id(
 
 
 def add_cart(request, product_id):  # adding the products to cart
-    if request.method == "POST":
-        color = request.POST.get("color")
-        size = request.POST.get("size")
-
-        print(color, size)
-
     product = get_object_or_404(Product, id=product_id)  # to get the product
+    product_variation = []
+    if request.method == "POST":
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+
+            try:
+                variation = Variation.objects.get(
+                    product=product,
+                    variation_category__iexact=key,
+                    variation_value__iexact=value,
+                )
+                product_variation.append(variation)
+            except:
+                pass
 
     try:
         cart = Cart.objects.get(
@@ -45,7 +54,9 @@ def add_cart(request, product_id):  # adding the products to cart
     except CartItem.DoesNotExist:
         cart_item = CartItem.objects.create(product=product, quantity=1, cart=cart)
         cart_item.save()
-    return redirect("cart")
+    return redirect(
+        request.META.get("HTTP_REFERER", "store")
+    )  # this redirect function is used to stay on the same product page after we add anyitem to the cart by fetching the current product url, if it fails to fetch the url then it redirect to the store page
 
 
 def remove_cart(  # removing the cart specific prodcuts
