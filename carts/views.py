@@ -1,4 +1,5 @@
 from decimal import Decimal
+import http
 from itertools import product
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -39,6 +40,7 @@ def add_cart(request, product_id):  # adding the products to cart
             except:
                 pass
 
+    # This try block belong to the CART
     try:
         cart = Cart.objects.get(
             cart_id=_cart_id(request)
@@ -47,12 +49,42 @@ def add_cart(request, product_id):  # adding the products to cart
         cart = Cart.objects.create(cart_id=_cart_id(request))
     cart.save()
 
-    try:
-        cart_item = CartItem.objects.get(product=product, cart=cart)
-        cart_item.quantity += 1
-        cart_item.save()
-    except CartItem.DoesNotExist:
+    # This try block belongs to the CartItem
+    is_cart_item_exists=CartItem.objects.filter(product=product,cart=cart).exists()
+    if is_cart_item_exists:
+        cart_item = CartItem.objects.filter(product=product, cart=cart)
+        #existing_variations->database
+        #current_variation->product_variation list
+        #item_id->database
+        ex_var_list=[]
+        item_ids=[]
+        for item in cart_item:
+            existing_variation=item.variations.all()
+            ex_var_list.append(sorted([str(i.id) for i in existing_variation]))
+            item_ids.append(item.id)
+
+        print(ex_var_list)
+
+        if product_variation in ex_var_list:
+            #increase cart item quantity
+            index=ex_var_list.index(product_variation)
+            item_id=item_ids[index]
+            item=CartItem.objects.get(product=product, id=item_id)
+            item.quantity+=1
+            item.save()
+
+        else:
+            item=CartItem.objects.create(product=product, quantity=1,cart=cart)
+            if len(product_variation) > 0:
+                item.variations.clear()
+                item.variations.add(*product_variation)
+            # cart_item.quantity += 1
+            item.save()
+    else:
         cart_item = CartItem.objects.create(product=product, quantity=1, cart=cart)
+        if len(product_variation) > 0:
+            cart_item.variations.clear()
+            cart_item.variations.add(*product_variation)
         cart_item.save()
     return redirect(
         request.META.get("HTTP_REFERER", "store")
