@@ -164,7 +164,7 @@ def remove_cart(  # removing the cart specific prodcuts
     product = get_object_or_404(Product, id=product_id)
 
     try:
-        cart_item = CartItem.objects.get(product=product, cart=cart)
+        cart_item = CartItem.objects.get(product=product, cart=cart) #to get cart item
 
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
