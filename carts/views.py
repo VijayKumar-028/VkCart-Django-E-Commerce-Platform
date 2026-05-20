@@ -91,7 +91,7 @@ def add_cart(request, product_id):  # adding the products to cart
                 sorted(list(existing_variation), key=lambda x: x.id)
             )
 
-            id.append(item.id)
+            id.append(item.id) # type: ignore
 
         # sorting current selected variations
         product_variation = sorted(
@@ -158,13 +158,13 @@ def add_cart(request, product_id):  # adding the products to cart
     )  # this redirect function is used to stay on the same product page after we add any item to the cart by fetching the current product url, if it fails to fetch the url then it redirect to the store page
 
 def remove_cart(  # removing the cart specific prodcuts
-    request, product_id
+    request, product_id, cart_item_id
 ):  # this function helps to decrease the product quantity in the cart
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
 
     try:
-        cart_item = CartItem.objects.get(product=product, cart=cart) #to get cart item
+        cart_item = CartItem.objects.get(product=product, cart=cart,id=cart_item_id) #to get cart item
 
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
@@ -177,13 +177,13 @@ def remove_cart(  # removing the cart specific prodcuts
 
 
 def remove_cart_item(  # this function is used to remove the direct product from the cart, it is shown as the remove(red button) in the cart
-    request, product_id
+    request, product_id,cart_item_id
 ):  # this function is to delete the cart item not for decreasing the quantity
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
 
     try:
-        cart_item = CartItem.objects.get(product=product, cart=cart)
+        cart_item = CartItem.objects.get(product=product, cart=cart, id=cart_item_id)
         cart_item.delete()
     except CartItem.DoesNotExist:
         pass
