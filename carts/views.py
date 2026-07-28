@@ -182,7 +182,7 @@ def add_cart(request, product_id):
 
 def remove_cart(  # removing the cart specific prodcuts
     request, product_id, cart_item_id
-):  # this function helps to decrease the product quantity in the cart
+):  # this function helps to decrease the product quantity in the cart (minus symbol for decreasing)
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
 
@@ -201,7 +201,7 @@ def remove_cart(  # removing the cart specific prodcuts
 
 def remove_cart_item(  # this function is used to remove the direct product from the cart, it is shown as the remove(red button) in the cart
     request, product_id,cart_item_id
-):  # this function is to delete the cart item not for decreasing the quantity
+): 
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
 
