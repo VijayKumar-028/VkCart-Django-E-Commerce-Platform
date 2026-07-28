@@ -84,7 +84,7 @@ def login(request):
             except:
                 pass
             auth.login(request, user)
-            messages.success(request, 'You are now logged in.')
+            
             return redirect('home')
         else:
             messages.error(request, 'Invalid Login Credintials')
