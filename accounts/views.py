@@ -79,7 +79,7 @@ def login(request):
 
 
                     for item in cart_item:
-                        item.user=user
+                        item.user=user # type: ignore
                         item.save()
             except:
                 pass
