@@ -8,7 +8,7 @@ from orders.models import Order
 
 from .forms import OrderForm
 
-
+#order placing function 
 @login_required(login_url='login')
 def place_order(request):
     current_user = request.user
