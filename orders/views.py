@@ -8,6 +8,10 @@ from orders.models import Order
 
 from .forms import OrderForm
 
+
+def payments(request):
+    return render(request,'orders/payments.html')
+
 #order placing function 
 @login_required(login_url='login')
 def place_order(request):
