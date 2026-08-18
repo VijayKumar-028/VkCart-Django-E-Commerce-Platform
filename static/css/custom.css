@@ -1,0 +1,142 @@
+/* =========================
+   REVIEW RATING STARS
+   ========================= */
+
+/* Hide Radio button */
+.rate > input {
+    display: none;
+}
+
+.rate {
+    display: inline-block;
+    border: 0;
+}
+
+.rate > label {
+    float: right;
+    cursor: pointer;
+}
+
+
+/* =========================
+   SHOWING THE STARS
+   ========================= */
+
+.rate > label:before {
+    display: inline-block;
+    font-size: 1.1rem;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f005";
+    margin: 0;
+    padding: 0.3rem 0.2rem;
+    cursor: pointer;
+}
+
+
+/* =========================
+   HALF STAR
+   ========================= */
+
+.rate .half:before {
+    content: "\f5c0";
+    position: absolute;
+    padding-right: 0;
+}
+
+
+/* =========================
+   CLICK AND HOVER
+   ========================= */
+
+.rate > input:checked ~ label,
+.rate > label:hover ~ label {
+    color: #ffb503;
+}
+
+
+/* Hover highlight */
+
+.rate > input:checked + label:hover,
+.rate > input:checked ~ label:hover,
+.rate > input:checked ~ label:hover ~ label,
+.rate > label:hover ~ input:checked ~ label {
+    color: #cc9000;
+}
+
+
+/* =========================
+   PRODUCT RATING STARS
+   ========================= */
+
+/*
+   Your HTML uses:
+   fa fa-star
+   fa fa-star-o
+   fa fa-star-half-o
+
+   But Font Awesome 5 uses different class names.
+   We therefore handle them with CSS.
+*/
+
+.rating-star i {
+    color: #ffb503 !important;
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+}
+
+
+/* Full star */
+.rating-star i.fa-star {
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+}
+
+
+/* Empty star */
+.rating-star i.fa-star-o::before {
+    content: "\f005";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 400;
+}
+
+
+/* Half star */
+.rating-star i.fa-star-half-o::before {
+    content: "\f5c0";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+
+
+/* =========================
+   PRODUCT IMAGE THUMBNAILS
+   ========================= */
+
+ul.thumb {
+    margin: 0 auto;
+    padding: 0;
+    float: left;
+}
+
+ul.thumb li {
+    list-style: none;
+    margin: 10px;
+}
+
+ul.thumb li img {
+    width: 80px;
+    height: 80px;
+    border: 1px solid grey;
+}
+.rating-error {
+    display: none;
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.rating-error.show {
+    display: block;
+}
+

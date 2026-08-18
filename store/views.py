@@ -1,16 +1,19 @@
 from itertools import product
 from math import prod
 
+from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from requests.utils import is_valid_cidr
 
 from carts.models import CartItem
 from carts.views import _cart_id
 from category.models import Category
 
-from .models import Product
+from .forms import ReviewForm
+from .models import Product, ReviewRating
 
 # Create your views here.
 
@@ -73,3 +76,50 @@ def search(request):  # Search Functionality by the keyword searched by the user
                 "product_count": product_count,
             }
     return render(request, "store/store.html", context)
+
+def submit_review(request, product_id):
+    url = request.META.get('HTTP_REFERER')
+
+    if request.method == 'POST':
+
+        try:
+            # Check whether the user has already reviewed this product
+            review = ReviewRating.objects.get(
+                user=request.user,
+                product_id=product_id
+            )
+
+            # Existing review -> update it
+            form = ReviewForm(request.POST, instance=review)
+
+            if form.is_valid():
+                form.save()
+
+                messages.success(
+                    request,
+                    'Thank you! Your review has been updated.'
+                )
+
+        except ReviewRating.DoesNotExist:
+
+            # No existing review -> create a new one
+            form = ReviewForm(request.POST)
+
+            if form.is_valid():
+                review = form.save(commit=False)
+
+                review.ip = request.META.get('REMOTE_ADDR')
+                review.product_id = product_id
+                review.user = request.user
+
+                review.save()
+
+                messages.success(
+                    request,
+                    'Thank you! Your review has been submitted.'
+                )
+
+        return redirect(url)
+
+    return redirect(url)
+            
