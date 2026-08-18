@@ -128,7 +128,7 @@
 	</div> <!-- container .//  -->
 </section>
 <!-- ========================= SECTION CONTENT END// ========================= -->
-<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD&intent=capture"></script>
 <script>
 
 function getCookie(name) {
@@ -147,7 +147,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-var amount = "{{ grand_total }}";
+var amount = "{{ grand_total|floatformat:2 }}";
 var csrftoken = getCookie("csrftoken");
 var orderID = "{{ order.order_number }}";
 
@@ -168,6 +168,7 @@ paypal.Buttons({
         return fetch("{% url 'create_paypal_order' %}", {
 
             method: "POST",
+            credentials: "same-origin",
 
             headers: {
                 "Content-Type": "application/json",
@@ -179,13 +180,15 @@ paypal.Buttons({
             })
 
         })
-        .then(response => response.json())
-        .then(data => {
-
-            console.log("Create Order Response:", data);
-
-            return data.id;
-
+        .then(function(response) {
+            return response.json().then(function(data) {
+                if (!response.ok || !data.id) {
+                    console.error("Create Order Error:", data);
+                    throw new Error(data.message || "Failed to create PayPal order");
+                }
+                console.log("Create Order Response:", data);
+                return data.id;
+            });
         });
 
     },
@@ -199,6 +202,7 @@ paypal.Buttons({
         return fetch("{% url 'capture_paypal_order' %}", {
 
             method: "POST",
+            credentials: "same-origin",
 
             headers: {
                 "Content-Type": "application/json",
@@ -213,25 +217,20 @@ paypal.Buttons({
             })
 
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) {
+            return response.json().then(function(captureData) {
+                console.log("Capture Response:", captureData);
 
-            console.log("Capture Response:", data);
-
-            if(data.success){
-
-                window.location.href =
-                    "{% url 'order_complete' %}" +
-                    "?order_number=" + data.order_number +
-                    "&payment_id=" + data.payment_id;
-
-            }
-            else{
+                if (response.ok && captureData.success) {
+                    window.location.href =
+                        "{% url 'order_complete' %}" +
+                        "?order_number=" + captureData.order_number +
+                        "&payment_id=" + captureData.payment_id;
+                    return;
+                }
 
                 alert("Payment Failed");
-
-            }
-
+            });
         });
 
     },

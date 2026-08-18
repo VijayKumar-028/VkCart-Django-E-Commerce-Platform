@@ -165,7 +165,7 @@ def order_complete(request):
 
     try:
         order=Order.objects.get(order_number=order_number, is_ordered=True)
-        ordered_products=OrderProduct.objects.filter(order_id=order.id)
+        ordered_products=OrderProduct.objects.filter(order_id=order.id) # type: ignore
 
         subtotal=0
 
@@ -185,6 +185,7 @@ def order_complete(request):
         return render(request, 'orders/order_complete.html', context)
     except (Payment.DoesNotExist, Order.DoesNotExist):
         return redirect('home')
+#PayPal Related Code
 @csrf_exempt
 @require_POST
 def create_paypal_order(request):
@@ -192,11 +193,33 @@ def create_paypal_order(request):
     body = json.loads(request.body)
 
     amount = body.get("amount")
+    if amount is None:
+        return JsonResponse({"error": "Amount is required"}, status=400)
 
-    paypal_order = create_order(amount)
+    # Root cause fix: PayPal's Orders v2 API requires return_url/cancel_url
+    # (now under payment_source.paypal.experience_context) or the buyer
+    # gets "Things don't appear to be working at the moment" after
+    # approving, because the SDK has no fallback destination if the
+    # in-context popup can't complete. These are rarely actually visited
+    # by the buyer (the JS SDK intercepts approval in-context), but PayPal
+    # requires them to be present on the order.
+    return_url = request.build_absolute_uri('/')
+    cancel_url = request.build_absolute_uri('/')
 
-    return JsonResponse(paypal_order)
 
+    paypal_order = create_order(amount, return_url=return_url, cancel_url=cancel_url)
+    # print("PAYPAL RESPONSE:")
+    # print(paypal_order)
+
+    order_id = paypal_order.get("id")
+    if not order_id:
+        status = paypal_order.get("_http_status", 400)
+        return JsonResponse(paypal_order, status=status)
+    
+
+    return JsonResponse({"id": order_id})
+
+@login_required(login_url="login")
 @csrf_exempt
 @require_POST
 def capture_paypal_order(request):
