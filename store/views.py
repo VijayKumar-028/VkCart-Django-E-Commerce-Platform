@@ -42,7 +42,7 @@ def store(request, category_slug=None):  # Bringing the store page with paginati
     }
     return render(request, "store/store.html", context)
 
-
+#detailed products
 def product_detail(request, category_slug, product_slug):  # Every product detail
     try:
         single_product = Product.objects.get(
@@ -53,6 +53,7 @@ def product_detail(request, category_slug, product_slug):  # Every product detai
         )
     except Exception as e:
         raise e
+    
 
     context = {
         "single_product": single_product,
