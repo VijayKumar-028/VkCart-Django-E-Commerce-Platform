@@ -19,8 +19,10 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from accounts.forms import RegistrationForm
 from carts.models import Cart, CartItem
 from carts.views import _cart_id
+from orders.models import Order, OrderProduct
 
-from .models import Account
+from .forms import RegistrationForm, UserForm, UserProfileForm
+from .models import Account, UserProfile
 
 # Create your views here.
 
@@ -118,6 +120,13 @@ def activate(request, uidb64, token):
 
 @login_required(login_url='login')
 def dashboard(request):
+    orders=Order.objects.order_by('-created_at').filter(user_id=request.user.id, is_ordered=True)
+    orderCount=orders.count()
+    userprofile=UserProfile.objects.get(user_id=request.user.id)
+    context={
+        "orderCount":orderCount,
+        "userprofile":userprofile,
+    }
     return render(request, 'accounts/dashboard.html')
 
 #this function logic is to send the link to the user mail 
